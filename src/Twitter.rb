@@ -8,16 +8,21 @@ class Twitter
   @@verify = URI("#{@@baseurl}/1.1/account/verify_credentials.json")  
   #Get the tweets of a specific user
   @@user_timeline = "#{@@baseurl}/1.1/statuses/user_timeline.json"
+  #Get the home timeline of authenticated user
+  @@home_timeline = "#{@@baseurl}/1.1/statuses/home_timeline.json"
 
+
+  attr_reader :auth_status
   
   def initialize(file)
-    @tokens = read_tokens(file)
+    tokens = read_tokens(file)
     @consumer_key = OAuth::Consumer.new(
-      @tokens["consumer_key"],
-      @tokens["consumer_secret"])
+     tokens["consumer_key"],
+     tokens["consumer_secret"])
     @access_token = OAuth::Token.new(
-      @tokens["access_token"],
-      @tokens["access_secret"])
+      tokens["access_token"],
+      tokens["access_secret"])
+    @auth_status = verify_auth 
   end
 
   
@@ -64,11 +69,8 @@ class Twitter
   end
 
   
-  public #Public methods of this class
-
-  
   #Verify the user authentication
-  def verify_credentials  
+  def verify_auth
     #Set up HTTP with SSL (Required by Twitter)
     http             = Net::HTTP.new @@verify.host, @@verify.port
     http.use_ssl     = true
@@ -84,11 +86,35 @@ class Twitter
     credentials      = parse_response response
   end
 
-  def get_timeline user, count
+  
+  public #Public methods of this class
+
+
+  def user_timeline user, count
     #Make a url with the query format to get a user timeline
     query = URI.encode_www_form "screen_name" => user.to_s, "count" => count
     url   = URI("#{@@user_timeline}?#{query}")
 
+    #Set up HTTP with SSL (Required by Twitter)
+    http             = Net::HTTP.new url.host, url.port
+    http.use_ssl     = true
+    http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+    
+    #Issue the request.
+    get              = Net::HTTP::Get.new url
+    get.oauth! http, @consumer_key, @access_token
+    http.start
+    response         = http.request get
+    
+    # Parse and return the Tweets if the response code was 200
+    JSON.parse response.body if response.code == '200'
+  end
+
+  def home_timeline  count="100"
+    #Make a url with the query format to get timeline
+    query = URI.encode_www_form "count" => count
+    url   = URI("#{@@home_timeline}?#{query}")
+    
     #Set up HTTP with SSL (Required by Twitter)
     http             = Net::HTTP.new url.host, url.port
     http.use_ssl     = true
@@ -106,15 +132,15 @@ class Twitter
         puts tweet["text"]
       end
     end
-
+    
     # Parse and print the Tweets if the response code was 200
     print_timeline(JSON.parse response.body) if response.code == '200'
   end
-
+  
   
 end #End of Twitter Class
 
 
 #SOME TESTES
 user = Twitter.new "tokens.txt"
-user.get_timeline  "twitterapi", 10 if user.verify_credentials
+user.home_timeline if user.auth_status
