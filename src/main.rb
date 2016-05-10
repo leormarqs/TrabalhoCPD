@@ -1,7 +1,7 @@
 
 #SOME TESTES
 require './lib/Twitter.rb'
-#require './lib/SortLambdas.rb'
+require './lib/SortLambdas.rb'
 
 user = Twitter.new "tokens.txt"
 
@@ -10,7 +10,7 @@ home = user.home_timeline 10 if user.auth_status
 
 puts "\n\n\n"
 user.print_tweets home
-#home.sort! &SortLambdas.oldest
+home.sort! &SortLambdas.oldest
 
 puts "\n\n\n"
 user.print_tweets home
