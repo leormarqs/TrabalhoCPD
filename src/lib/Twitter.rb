@@ -3,7 +3,7 @@ require 'oauth'
 require 'json'
 
 
-class Twitter
+class TwitterAPI
 
   #Last requisition to Twitter API
   $last_api_requisition ||= nil
@@ -38,7 +38,7 @@ class Twitter
   #consumer_secret YOUR VALUE
   #access_token YOUR VALUE
   #access_secret YOUR VALUE   
-  def read_tokens file  
+  def read_tokens(file)
     #Initialize a new hash to receiving tokens
     tokens = Hash.new
     
@@ -56,7 +56,7 @@ class Twitter
 
   
   #Parse a response from api (JSON to HASH)
-  def parse_response response
+  def parse_response(response)
     response_body = nil
     
     #Check if the request was successfully attended
@@ -93,7 +93,7 @@ class Twitter
   end
 
   #Returns a collection of the most recent tweets posted by the user indicated by 'user'
-  def user_timeline user, count, since_id=nil
+  def user_timeline(user, count, since_id=nil)
     #Refresh the last api requisition time
     $last_api_requisition = Time.now
     
@@ -125,7 +125,7 @@ class Twitter
 
 
   #Get the 'count' last tweets from the authenticated user home_timeline
-  def home_timeline  count, since_id=nil
+  def home_timeline(count, since_id=nil)
     #Refresh the last api requisition time
     $last_api_requisition = Time.now
 
@@ -156,7 +156,7 @@ class Twitter
 
 
   # Print texts from a list of Tweets
-  def print_tweets tweets
+  def print_tweets(tweets)
     tweets.each do |tweet|
       date = tweet["created_at"].split(" ")
       day = "#{date[2]}-#{date[1]}-#{date[5]}"
@@ -165,5 +165,55 @@ class Twitter
     end
   end
 
-
 end #End of Twitter Class
+
+class Tweet
+
+  attr_reader :username
+  attr_reader :hashtags
+  attr_reader :text
+  attr_reader :date
+
+  # Define a new tweet object
+  def initialize(tweet)
+    @username = "%15s" % tweet["user"]["screen_name"].to_s
+    @hashtags = parse_hashtags tweet["entities"]["hashtags"]
+    @text = "%140s" % tweet["text"].to_s
+    @date = "%30s" % tweet["created_at"].to_s
+  end
+
+  # Print a tweet object
+  def print
+    puts "@#{@username.split.join} (#{@date}): \n\t#{@text.split.join(sep=" ")} \n\t#{@hashtags.split.join(" ")}"
+  end
+  
+  private #Private methods of this class
+
+  # Parse hashtags to an new tweet
+  def parse_hashtags(hashtags)
+    hashs = Array.new
+    hashtags.each do |ht|
+      hashs << "#{ht["text"]} "
+    end
+    "%255s" % hashs.join
+  end
+end
+
+# Parse an array of tweets
+def parse_tweets(tweets)
+  twts = Array.new 
+  tweets.each do |t|
+    t1 = Tweet.new t
+    twts << t1 
+  end
+  twts
+end
+
+# Print an array of tweets
+def print_tweets(tweets)
+  tweets.each do |t|
+    t.print
+    puts "\n"
+  end
+  true
+end

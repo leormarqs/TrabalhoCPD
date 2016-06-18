@@ -3,18 +3,19 @@
 require './lib/Twitter.rb'
 require './lib/SortLambdas.rb'
 
-user = Twitter.new "tokens.txt"
+user = TwitterAPI.new "tokens.txt"
 
-twitterapi =  user.user_timeline "twitterapi", 10 if user.auth_status
-home = user.home_timeline 10 if user.auth_status
-
-puts "\n\n\n"
-user.print_tweets home
-home.sort! &SortLambdas.oldest
+timeline =  user.user_timeline "leormarqs", 10 if user.auth_status
+#home     = user.home_timeline 1 if user.auth_status
 
 puts "\n\n\n"
-user.print_tweets home
+#user.print_tweets home
+#home.sort! &SortLambdas.oldest
 
-puts"\n\n\n"
-puts $last_api_requisition
+#puts "\n\n\n"
+#user.print_tweets home
 
+puts "\n\n\n"
+timeline1 = parse_tweets timeline;
+
+print_tweets timeline1
