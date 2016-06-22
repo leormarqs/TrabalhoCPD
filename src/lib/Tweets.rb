@@ -177,10 +177,10 @@ def read_one_from_file(path,position)
 
   tweet = Tweet.new
   
-  tweet.username = u.unpack("Z*").join.split.join(" ")
-  tweet.hashtags = h.unpack("Z*").join.split.join(" ")
-  tweet.text     = t.unpack("Z*").join.split.join(" ")
-  tweet.date     = d.unpack("Z*").join.split.join(" ")
+  tweet.username = truncate_bytes u.unpack("Z*").join.split.join(" ")
+  tweet.hashtags = truncate_bytes h.unpack("Z*").join.split.join(" ")
+  tweet.text     = truncate_bytes t.unpack("Z*").join.split.join(" ")
+  tweet.date     = truncate_bytes d.unpack("Z*").join.split.join(" ")
 
   tweet
 end

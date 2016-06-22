@@ -6,9 +6,10 @@ require './lib/SortLambdas.rb'
 #Authenticate on Twitter API
 user = TwitterAPI.new "tokens.txt"
 
+#Read new tweets from the homepage of the authenticated user
 def read_from_home(user)
   
-  hm = user.home_timeline 10 if user.auth_status
+  hm = user.home_timeline 20 if user.auth_status
 
   home = parse_tweets hm
   
@@ -22,11 +23,12 @@ def read_from_home(user)
 
 end
 
+#Read new tweets from specific user
 def read_from_user(user)
   puts "Forneça o nome de usuario a ser consultado."
   un = gets.chomp
   
-  tl = user.user_timeline un.to_s, 10 if user.auth_status
+  tl = user.user_timeline un.to_s, 20 if user.auth_status
 
   timeline = parse_tweets tl
   
@@ -40,7 +42,7 @@ def read_from_user(user)
 
 end
 
-
+#Tweets Searchs Option
 def search_tweets
 
   puts "Qual criterio de busca você quer usar?"
@@ -57,13 +59,16 @@ def search_tweets
     puts "Digite a hashtag a ser consultada (Sem #):"
     opt = gets.chomp
     
-    consulta = hashFile[opt.intern]
+    cons = hashFile[opt.intern]
 
-    puts "\nOcorrências encontradas:"
-    
-    consulta.each do |c|
-      read_one_from_file("./files/tweets.bin", (c*2048)).print
-      puts "\n"
+    unless cons.length == 0
+      puts "\nOcorrências encontradas:"
+      cons.each do |c|
+        read_one_from_file("./files/tweets.bin", (c*2048)).print
+        puts "\n"
+      end
+    else
+      puts "\nNão foram encontradas Ocorrências\n"
     end
     
   when "2" then
@@ -72,37 +77,44 @@ def search_tweets
     puts "Digite o username a ser consultado (Sem @):"
     opt = gets.chomp
     
-    consulta = userFile[opt.intern]
+    cons = userFile[opt.intern]
 
-    puts "\nOcorrências encontradas:"
-    
-    consulta.each do |c|
-      read_one_from_file("./files/tweets.bin", (c*2048)).print
-      puts "\n"
+    unless cons.length == 0
+      puts "\nOcorrências encontradas:"
+      cons.each do |c|
+        read_one_from_file("./files/tweets.bin", (c*2048)).print
+        puts "\n"
+      end
+    else
+      puts "\nNão foram encontradas Ocorrências\n"
     end
-    
-  when "3" then
+                                                          
+when "3" then
     textFile = read_text_file
 
     puts "Digite a palavra a ser consultada:"
     opt = gets.chomp
     
-    consulta = textFile[opt.intern]
+    cons = textFile[opt.intern]
 
-    puts "\n\nOcorrências encontradas:"
-    
-    consulta.each do |c|
-      read_one_from_file("./files/tweets.bin", (c*2048)).print
-      puts "\n"
+    unless cons.length == 0
+      puts "\nOcorrências encontradas:"
+      cons.each do |c|
+        read_one_from_file("./files/tweets.bin", (c*2048)).print
+        puts "\n"
+      end
+    else
+      puts "\nNão foram encontradas Ocorrências\n"
     end
     
   end
 end
 
+#Tweets Exibition option
 def view_tweets
   puts "Qual ordem de exibição você quer usar?"
-  puts "1 - Mais recentes primeiro"
-  puts "2 - Mais antigos primeiro"
+  puts "1 - Ordem Alfabética de Usuários"
+  puts "2 - Ordem Alfabética Reversa de Usuários"
 
   opt = gets.chomp
   
@@ -112,14 +124,15 @@ def view_tweets
   
   case opt
   when "1"
-    tweets.sort! &SortLambdas.newest
+    tweets.sort! &SortLambdas.user
     print_tweets tweets
   when "2"
-    tweets.sort! &SortLambdas.oldest
+    tweets.sort! &SortLambdas.user_reverse
     print_tweets tweets
   end
 end
 
+#Get new tweets from twitter option
 def refresh_tweets(user)
 
   puts "1 - Ler novos tweets da home"
@@ -131,18 +144,16 @@ def refresh_tweets(user)
   case opt
   when "1" then
     
-    hm = user.home_timeline 10 if user.auth_status
+    hm = user.home_timeline 20 if user.auth_status
 
     home = parse_tweets hm
 
     tl = home + tweets
-    tl.uniq!
-
     
     write_hash_file tl
     write_user_file tl
     write_text_file tl
-    
+
     write_file("./files/tweets.bin", tl)
 
     puts "Adicionados novos tweets!\n\n"
@@ -151,17 +162,16 @@ def refresh_tweets(user)
     puts "Forneça o nome de usuario a ser consultado."
     un = gets.chomp
   
-    tl = user.user_timeline un.to_s, 10 if user.auth_status
+    tl = user.user_timeline un.to_s, 20 if user.auth_status
     
     timeline = parse_tweets tl
 
     tl1 = timeline + tweets
-    tl1.uniq!
     
     write_hash_file tl1
     write_user_file tl1
     write_text_file tl1
-    
+
     write_file("./files/tweets.bin", tl1)
     
     puts "Adicionados novos tweets!\n\n"
@@ -170,75 +180,12 @@ def refresh_tweets(user)
 
 end
 
-
-  
-#end
-
-=begin
-  
-#timeline =  
-timeline  = user.home_timeline 100 if user.auth_status
-
-#puts "\n\n\n"
-#user.print_tweets home
-#home.sort! &SortLambdas.oldest
-
-#puts "\n\n\n"
-#user.print_tweets home
-
-timeline1 = parse_tweets timeline
-
-write_hash_file timeline1
-write_user_file timeline1
-write_text_file timeline1
-
-
-
-# Pesquisando  #Rio2016
-
-puts "\n\n\n"
-
-
-
- puts "\n\n\n\n"
-
-write_file "Teste.bin", timeline1
- 
-
-
-consulta = f3["and".intern]
-
-
-
-puts "\n\n\n"
-
-
-
-#read_one_from_file("Teste.bin", 4096).print
-print_tweets read_all_from_file("Teste.bin")
-
-
-
-io = File.open("tweets.bin", "wb")
-io.write(Marshal.dump timeline1)
-io.close
-
-io1 = File.open("tweets.bin", "rb")
-tl1 = io1.read
-io1.close
-
-tl2 = Marshal.load tl1
-
-print_tweets tl2
-
-=end
-
 puts "Bem-Vindo!"
 
 optOne = nil
 optTwo = nil
 
-while optOne != false && optTwo != false
+while optOne != "4" && optTwo != "3"
   
   if File.exist?("./files/tweets.bin")
     puts "O que deseja fazer?"
@@ -253,7 +200,6 @@ while optOne != false && optTwo != false
     when "1" then search_tweets
     when "2" then view_tweets
     when "3" then refresh_tweets(user)
-    when "4" then false
     else nil
     end
 
@@ -268,7 +214,6 @@ while optOne != false && optTwo != false
     case optTwo
     when "1" then read_from_home(user)
     when "2" then read_from_user(user)
-    when "3" then false
     else nil
     end
   end
