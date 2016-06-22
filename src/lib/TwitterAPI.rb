@@ -34,10 +34,10 @@ class TwitterAPI
   
   #Get the keys provided on dev.twitter.com
   #The values must be on a file with the following format:
-  #consumer_key YOUR VALUE
-  #consumer_secret YOUR VALUE
-  #access_token YOUR VALUE
-  #access_secret YOUR VALUE   
+  #consumer_key YOUR_VALUE
+  #consumer_secret YOUR_VALUE
+  #access_token YOUR_VALUE
+  #access_secret YOUR_VALUE   
   def read_tokens(file)
     #Initialize a new hash to receiving tokens
     tokens = Hash.new
@@ -60,7 +60,7 @@ class TwitterAPI
     response_body = nil
     
     #Check if the request was successfully attended
-    #Then, parse the response body, or puts a erros message on the screen
+    #Then, parse the response body, or puts a error message on the screen
     if response.code == "200"
       response_body = JSON.parse(response.body)  
     else
@@ -120,7 +120,7 @@ class TwitterAPI
     response         = http.request get
     
     # Parse and return the Tweets if the response code was 200
-    timeline = JSON.parse response.body if response.code == '200'
+    timeline = parse_response response
   end
 
 
@@ -150,10 +150,11 @@ class TwitterAPI
     response         = http.request get
 
     # Parse the Tweets if the response code was 200
-    timeline = JSON.parse response.body if response.code == "200"
+    timeline = parse_response response
 
   end
 
+  
   # Print texts from a list of Tweets
   def print_tweets(tweets)
     tweets.each do |tweet|
